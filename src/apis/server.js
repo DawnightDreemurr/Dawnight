@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const server = axios.create({
-  baseURL: '/api', // API 主机地址
+  baseURL: 'https://dawnight-back.onrender.com/v1', // API 主机地址
   timeout: 5000, // 请求超时时间
   headers: {
     'Content-Type': 'application/json' // 默认请求头
