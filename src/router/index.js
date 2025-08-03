@@ -12,10 +12,14 @@ const routes = [
       title: 'Dawnight-天气预报'
     }
   },
-  // 添加常见重定向
+
   {
     path: '/',
-    redirect: '/home'
+    name: 'Home',
+    component: Home,
+    meta: {
+      title: 'Dawnight-天气预报'
+    }
   },
   // 404处理
   {
