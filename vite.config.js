@@ -18,7 +18,7 @@ export default defineConfig({
     proxy: {
       // 代理所有以 /api 开头的请求
       '/api': {
-        target: 'http://localhost:3000/v1',
+        target: 'https://dawnight-back.onrender.com/v1',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       },
