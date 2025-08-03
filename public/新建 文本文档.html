@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FullPage.js 导航优化</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fullPage.js/4.0.20/fullpage.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+    }
+    
+    #app {
+      position: relative;
+      height: 100vh;
+      width: 100vw;
+    }
+    
+    .fullpage-wrapper {
+      position: relative;
+    }
+    
+    .section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100%;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    
+    .section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: -1;
+    }
+    
+    .section:nth-child(1) {
+      background: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=2070') center/cover;
+    }
+    
+    .section:nth-child(2) {
+      background: url('https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070') center/cover;
+    }
+    
+    .section:nth-child(3) {
+      background: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070') center/cover;
+    }
+    
+    .section:nth-child(4) {
+      background: url('https://images.unsplash.com/photo-1526947425960-945c6e72858f?q=80&w=2070') center/cover;
+    }
+    
+    .section-content {
+      max-width: 800px;
+      padding: 30px;
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      transform: translateY(50px);
+      opacity: 0;
+      transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .section.active .section-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    h1 {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      color: #4ade80;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    p {
+      font-size: 1.4rem;
+      line-height: 1.8;
+      margin-bottom: 25px;
+    }
+    
+    .btn {
+      display: inline-block;
+      background: linear-gradient(45deg, #4ade80, #22d3ee);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+    
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(-100%);
+      transition: transform 0.4s ease;
+    }
+    
+    .btn:hover::after {
+      transform: translateX(0);
+    }
+    
+    .nav-fixed {
+      position: fixed;
+      top: 50%;
+      right: 30px;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    
+    .nav-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .nav-dot::after {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(74, 222, 128, 0.1);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .nav-dot:hover::after {
+      opacity: 1;
+    }
+    
+    .nav-dot.active {
+      transform: scale(1.6);
+      background: #4ade80;
+      box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.3);
+    }
+    
+    .nav-dot:hover {
+      background: #4ade80;
+      transform: scale(1.4);
+    }
+    
+    .tooltip {
+      position: absolute;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(15, 23, 42, 0.9);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .nav-dot:hover .tooltip {
+      opacity: 1;
+      right: 40px;
+    }
+    
+    .scroll-down {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0.7;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);}
+      40% {transform: translateY(-20px) translateX(-50%);}
+      60% {transform: translateY(-10px) translateX(-50%);}
+    }
+    
+    .scroll-down i {
+      font-size: 24px;
+      margin-top: 5px;
+    }
+    
+    .page-counter {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.8);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 100;
+    }
+    
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      transition: all 0.4s ease;
+    }
+    
+    .header.scrolled {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 15px 40px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo i {
+      color: #4ade80;
+      margin-right: 10px;
+    }
+    
+    .nav-menu {
+      display: flex;
+      gap: 30px;
+    }
+    
+    .nav-link {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      position: relative;
+      padding: 5px 0;
+    }
+    
+    .nav-link:hover {
+      color: #4ade80;
+    }
+    
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #4ade80;
+      transition: width 0.4s ease;
+    }
+    
+    .nav-link:hover::after {
+      width: 100%;
+    }
+    
+    .nav-link.active {
+      color: #4ade80;
+    }
+    
+    .nav-link.active::after {
+      width: 100%;
+    }
+    
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    @media (max-width: 768px) {
+      .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        height: 100vh;
+        width: 70%;
+        background: rgba(15, 23, 42, 0.95);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        transition: right 0.4s ease;
+        z-index: 1000;
+      }
+      
+      .nav-menu.open {
+        right: 0;
+      }
+      
+      .mobile-menu-btn {
+        display: block;
+        z-index: 1001;
+      }
+      
+      .header {
+        padding: 15px 20px;
+      }
+      
+      .header.scrolled {
+        padding: 10px 20px;
+      }
+      
+      h1 {
+        font-size: 2.5rem;
+      }
+      
+      p {
+        font-size: 1.1rem;
+      }
+      
+      .nav-fixed {
+        right: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="header" ref="header">
+      <div class="logo">
+        <i class="fas fa-cube"></i>
+        <span>FullPage.js</span>
+      </div>
+      <nav class="nav-menu" ref="navMenu">
+        <a href="#" class="nav-link" :class="{ active: activeSection === 0 }" @click.prevent="scrollToSection(0)">首页</a>
+        <a href="#" class="nav-link" :class="{ active: activeSection === 1 }" @click.prevent="scrollToSection(1)">产品</a>
+        <a href="#" class="nav-link" :class="{ active: activeSection === 2 }" @click.prevent="scrollToSection(2)">服务</a>
+        <a href="#" class="nav-link" :class="{ active: activeSection === 3 }" @click.prevent="scrollToSection(3)">联系我们</a>
+      </nav>
+      <button class="mobile-menu-btn" @click="toggleMobileMenu">
+        <i class="fas fa-bars"></i>
+      </button>
+    </header>
+
+    <div ref="fullpageWrapper" class="fullpage-wrapper">
+      <section class="section" :class="{ active: activeSection === 0 }">
+        <div class="section-content">
+          <h1>欢迎来到我们的网站</h1>
+          <p>探索无限可能，体验流畅的全屏滚动效果。我们的平台为您提供最佳的用户体验和视觉享受。</p>
+          <button class="btn" @click="scrollToSection(1)">了解更多</button>
+        </div>
+      </section>
+
+      <section class="section" :class="{ active: activeSection === 1 }">
+        <div class="section-content">
+          <h1>创新产品</h1>
+          <p>我们提供前沿的技术解决方案，帮助您的业务实现数字化转型。我们的产品经过精心设计，满足您的各种需求。</p>
+          <button class="btn" @click="scrollToSection(3)">获取演示</button>
+        </div>
+      </section>
+
+      <section class="section" :class="{ active: activeSection === 2 }">
+        <div class="section-content">
+          <h1>专业服务</h1>
+          <p>从咨询到实施，我们的专业团队为您提供全方位的支持。我们致力于提供卓越的服务，确保您的成功。</p>
+          <button class="btn" @click="scrollToSection(3)">联系我们</button>
+        </div>
+      </section>
+
+      <section class="section" :class="{ active: activeSection === 3 }">
+        <div class="section-content">
+          <h1>联系我们</h1>
+          <p>准备好开始您的项目了吗？我们的团队随时准备为您提供帮助。请随时与我们联系，我们将尽快回复您。</p>
+          <button class="btn">发送消息</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="nav-fixed">
+      <div 
+        v-for="(name, index) in sectionNames" 
+        :key="index"
+        class="nav-dot"
+        :class="{ active: activeSection === index }"
+        @click="scrollToSection(index)"
+        @mouseenter="setHoverIndex(index)"
+        @mouseleave="hoverIndex = null"
+      >
+        <span class="tooltip">{{ name }}</span>
+      </div>
+    </div>
+
+    <div class="scroll-down" v-if="activeSection === 0">
+      <span>向下滚动</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div class="page-counter">
+      {{ activeSection + 1 }} / {{ sectionNames.length }}
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, onMounted, onBeforeUnmount } = Vue
+    
+    createApp({
+      setup() {
+        const fullpageWrapper = ref(null)
+        const fullpageInstance = ref(null)
+        const activeSection = ref(0)
+        const hoverIndex = ref(null)
+        const header = ref(null)
+        const navMenu = ref(null)
+        
+        const sectionNames = ['首页', '产品', '服务', '联系我们']
+        
+        // 初始化 fullpage.js
+        const initFullPage = () => {
+          fullpageInstance.value = new fullpage(fullpageWrapper.value, {
+            licenseKey: 'gplv3-license',
+            scrollingSpeed: 800,
+            parallax: true,
+            scrollBar: false,
+            afterLoad: (_, destination) => {
+              activeSection.value = destination.index
+            },
+            onLeave: (_, destination) => {
+              activeSection.value = destination.index
+            }
+          })
+        }
+        
+        // 滚动到指定部分
+        const scrollToSection = (index) => {
+          if (fullpageInstance.value) {
+            fullpageInstance.value.moveTo(index + 1)
+          }
+        }
+        
+        // 设置悬停索引
+        const setHoverIndex = (index) => {
+          hoverIndex.value = index
+        }
+        
+        // 处理滚动事件
+        const handleScroll = () => {
+          if (window.scrollY > 50) {
+            header.value.classList.add('scrolled')
+          } else {
+            header.value.classList.remove('scrolled')
+          }
+        }
+        
+        // 切换移动端菜单
+        const toggleMobileMenu = () => {
+          navMenu.value.classList.toggle('open')
+        }
+        
+        onMounted(() => {
+          initFullPage()
+          window.addEventListener('scroll', handleScroll)
+          handleScroll() // 初始化状态
+        })
+        
+        onBeforeUnmount(() => {
+          if (fullpageInstance.value) {
+            fullpageInstance.value.destroy()
+          }
+          window.removeEventListener('scroll', handleScroll)
+        })
+        
+        return {
+          fullpageWrapper,
+          activeSection,
+          sectionNames,
+          scrollToSection,
+          setHoverIndex,
+          hoverIndex,
+          header,
+          navMenu,
+          toggleMobileMenu
+        }
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html>

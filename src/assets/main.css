@@ -1,0 +1,29 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+html {
+  scrollbar-width: thin; /* Firefox - 自动使用系统细滚动条 */
+  scrollbar-color: rgba(0,0,0,0.2) transparent; /* Firefox - 半透明灰色 */
+}
+
+/* WebKit浏览器专属样式 */
+::-webkit-scrollbar {
+  width: 4px;  /* 非常细的滚动条 */
+  height: 4px; /* 水平滚动条同样细 */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* 完全透明轨道 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2); /* 半透明灰色 */
+  border-radius: 2px; /* 轻微圆角 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.3); /* 悬停时稍微明显一点 */
+}
